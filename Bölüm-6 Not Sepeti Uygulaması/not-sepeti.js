@@ -1,12 +1,75 @@
-const yeniGorev = document.querySelector(".input-gorev") 
+const yeniGorev = document.querySelector(".input-gorev")
 const yeniGorevEkleBtn = document.querySelector(".btn-gorev-ekle")
 const gorevListesi = document.querySelector(".gorev-listesi")
 
-yeniGorevEkleBtn.addEventListener("click",gorevEkle)
+yeniGorevEkleBtn.addEventListener('click', gorevEkle);
+gorevListesi.addEventListener('click', gorevSilTamamla)
+document.addEventListener('DOMContentLoaded',localStorageOku)
 
 function gorevEkle(e) {
     e.preventDefault();
+    if(yeniGorev.value!=""){
+        gorevItemOlustur(yeniGorev.value);
+        localStorageKaydet(yeniGorev.value);
+        yeniGorev.value = '';
 
+    }
+    else{
+        alert('Boş Not Girilemez');
+    }
+
+}
+
+
+function gorevSilTamamla(e) {
+
+    const tiklanilanEleman = e.target;
+
+    if (tiklanilanEleman.classList.contains('gorev-btn-tamamlandi')) {
+        tiklanilanEleman.parentElement.classList.toggle('gorev-tamamlandi');//sınıfı ekledik.s
+    }
+    if (tiklanilanEleman.classList.contains('gorev-btn-sil')) {
+        if(confirm('Silmek istediğinize emin misiniz ?')){
+            tiklanilanEleman.parentElement.classList.toggle('kaybol');
+            const silinicekGorev=tiklanilanEleman.parentElement.children[0].innerText;
+            localStorageSil(silinicekGorev);
+            tiklanilanEleman.parentElement.addEventListener(('transitionend'),function (){//animasyon bitince sildik
+                tiklanilanEleman.parentElement.remove();
+            })
+        }
+
+    }
+}
+
+function localStorageKaydet(yeniGorev) {
+    let gorevler;
+
+    if (localStorage.getItem('gorevler')===null){
+        gorevler=[];
+    }else{
+        gorevler=JSON.parse(localStorage.getItem('gorevler'));
+    }
+
+    gorevler.push(yeniGorev);
+
+    localStorage.setItem('gorevler', JSON.stringify(gorevler));
+}
+
+function localStorageOku() {
+    let gorevler;
+
+    if (localStorage.getItem('gorevler')===null){
+        gorevler=[];
+    }else{
+        gorevler=JSON.parse(localStorage.getItem('gorevler'));
+    }
+
+    gorevler.forEach(function (gorev) {
+        gorevItemOlustur(gorev);
+    });
+}
+
+function gorevItemOlustur(gorev) {
     //div oluşturma
     const gorevDiv = document.createElement("div");
     gorevDiv.classList.add("gorev-item")
@@ -14,7 +77,7 @@ function gorevEkle(e) {
     //li oluşturma
     const gorevLi = document.createElement("li")
     gorevLi.classList.add("gorev-tanim")
-    gorevLi.textContent = yeniGorev.value
+    gorevLi.innerText = gorev
 
     //li'yi div içine ekleme
     gorevDiv.appendChild(gorevLi)
@@ -27,39 +90,37 @@ function gorevEkle(e) {
     const gorevTamamlandiBtn = document.createElement("button")
     gorevTamamlandiBtn.classList.add("gorev-btn")
     gorevTamamlandiBtn.classList.add("gorev-btn-tamamlandi")
-    gorevTamamlandiBtn.innerHTML='<i class="fa-solid fa-calendar-check"></i>'
-    
+    gorevTamamlandiBtn.innerHTML = '<i class="fa-solid fa-calendar-check"></i>'
+
     gorevDiv.appendChild(gorevTamamlandiBtn)
 
     //silme butonu ekleme
     const gorevSilBtn = document.createElement("button")
     gorevSilBtn.classList.add("gorev-btn")
     gorevSilBtn.classList.add("gorev-btn-sil")
-    gorevSilBtn.innerHTML='<i class="fa-solid fa-calendar-xmark"></i>'
+    gorevSilBtn.innerHTML = '<i class="fa-solid fa-calendar-xmark"></i>'
 
     gorevDiv.appendChild(gorevSilBtn)
 
-    //görevi ekledikten sonra input'taki değeri siler
-    yeniGorev.value = ' '
+    
 }
 
-gorevListesi.addEventListener("click",goreviSilTamamla)
 
-function goreviSilTamamla(e){
+function localStorageSil(gorev) {
+    let gorevler;
 
-    const tiklanilanEleman = e.target
-
-    //contains metodu class'ın olup olmadığını sorgular. burda bu class varsa bunu yap, yoksa şu class varsa bunu yap dedik
-    if(tiklanilanEleman.classList.contains("gorev-btn-tamamlandi")){
-        //toggle ile bu class yoksa ekle ama varsa sil dedik. böylelikle butona tıkladığımızda üstü çizilir, yeniden tıkladığımızda çizgi kalkar
-        tiklanilanEleman.parentElement.classList.toggle("gorev-tamamlandi")
+    if (localStorage.getItem('gorevler')===null){
+        gorevler=[];
+    }else{
+        gorevler=JSON.parse(localStorage.getItem('gorevler'));
     }
-    else if(tiklanilanEleman.classList.contains("gorev-btn-sil")){
-        tiklanilanEleman.parentElement.classList.toggle("kaybol")
-        //transitionend event'i animasyon bittikten sonra kodu çalıştırır
-        tiklanilanEleman.parentElement.addEventListener("transitionend",function (){
-            tiklanilanEleman.parentElement.remove()
-        })
 
-    }
+    //splice ile item sil
+    const silinecekElemanIndex = gorevler.indexOf(gorev);
+    console.log(silinecekElemanIndex);
+    gorevler.splice(silinecekElemanIndex, 1);
+
+    localStorage.setItem('gorevler', JSON.stringify(gorevler));
+
+    
 }
